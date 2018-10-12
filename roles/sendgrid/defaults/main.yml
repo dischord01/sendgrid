@@ -1,0 +1,4 @@
+# file: roles/sendgrid/defaults/main.yml
+---
+#
+# foo: default

@@ -1,0 +1,10 @@
+---
+- name: Send emails via Sendgrid
+  hosts: localhost
+  vars:
+    user_email: "bsollar@redhat.com"
+  roles:
+    - { role: sendgrid, tags: ['ares']  } # orion
+
+
+# Sendgrid 2.2.1
