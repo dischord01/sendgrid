@@ -1,0 +1,110 @@
+---
+# tasks file for deploy
+# - name: Create a resource group
+#   azure_rm_resourcegroup:
+#     name: "{{ resource }}"
+#     location: eastus
+
+# - name: Create vnet
+#   azure_rm_virtualnetwork:
+#     name: "{{ resource }}-vnet"
+#     resource_group: "{{ resource }}"
+#     address_prefixes_cidr:
+#         - "10.0.0.0/24"
+
+# - name: Create a subnet
+#   azure_rm_subnet:
+#     name: "{{ resource }}-subnet"
+#     virtual_network_name: "{{ resource }}-vnet"
+#     resource_group: "{{ resource }}"
+#     address_prefix_cidr: "10.0.0.0/24"
+
+# - name: Create a public ip address
+#   azure_rm_publicipaddress:
+#     resource_group: "{{ resource }}"
+#     name: "{{ item }}-ip"
+#   with_items:
+#      - "{{ vmname }}"
+#   register: azure_public_ip
+
+# - name: create security group
+#   azure_rm_securitygroup:
+#       resource_group: "{{ resource }}"
+#       name: "{{ resource }}-security"
+#       purge_rules: yes
+#       rules:
+#           - name: 'AllowSSH'
+#             protocol: Tcp
+#             destination_port_range: 22
+#             access: Allow
+#             priority: 1000
+#             direction: Inbound
+#           - name: 'AllowEclipseCHE'
+#             protocol: Tcp
+#             destination_port_range: 8080
+#             access: Allow
+#             priority: 999
+#             direction: Inbound
+#           - name: 'AllowRegistry'
+#             protocol: Tcp
+#             destination_port_range: 5000
+#             access: Allow
+#             priority: 998
+#             direction: Inbound
+            
+
+# - name: Create a network interface using existing security group and public IP
+#   azure_rm_networkinterface:
+#         name: "{{ item }}-nic"
+#         resource_group: "{{ resource }}"
+#         virtual_network_name: "{{ resource }}-vnet"
+#         subnet_name: "{{ resource }}-subnet"
+#         security_group_name: "{{ resource }}-security"
+#         public_ip_address_name: "{{ item }}-ip"
+#   with_items:
+#     - "{{ vmname }}"
+
+# - name: create a storage account
+#   azure_rm_storageaccount:
+#     resource_group: "{{ resource }}"
+#     name: "{{ item }}sa"
+#     type: Standard_LRS
+#   with_items:
+#     - "{{ vmname }}"
+
+- name: Create VM
+  azure_rm_virtualmachine:
+    resource_group: "{{ resource }}"
+    name: "{{ item }}"
+    admin_username: ansible
+    os_type: Linux
+    ssh_password_enabled: false
+    vm_size: "{{ vmsize }}"
+    ssh_public_keys:
+      - path: /home/ansible/.ssh/authorized_keys
+        key_data: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDfAmut52v4L2vsU7GYLh5Mc59pYAZZzkQf7VuBnZfnXeUZNf0VKOi/076TUxnAWVgWFgqNw2NvuPbla2knw53rJrDD17+vfWxeYjpM/hoV8YuITBtvmafFxKx9hZEbLGZmE9ulu9xZXjE3BQcPinLzZrxxznC49IbMmKo57eE+9NUVhHhFiEA3KaSxPo1m35Bq0wBtFxP/i0VB+L7q5vuFuQswCm9bNnc+84VwF3uF6YLDxKlnDcIQbInXioQUknfBV/aXXo3gjSkaz2CxrEiTIVFNAPGELfprFkV2Ejdmoi6DVmHFTsC3ThAbOJZKgmzNoWSE/IK43CKgQxtvixuF dischord01@dischord01.local"
+    image:
+     offer: CentOS
+     publisher: "OpenLogic"
+     sku: '7.4'
+     version: latest
+  with_items:
+    - "{{ vmname }}"
+  register: azure_vm
+
+- name: Get Public IP
+  azure_rm_publicipaddress_facts:
+    resource_group: "{{ vault_azure_resource_group }}"
+    name: "linuxvm101"
+  register: azure_ip
+
+- name: debug the ip
+  debug:
+    var: azure_ip
+
+- name: Add new instance to host group
+  add_host:
+    name: "{{ item.properties.ipAddress }}"
+    groups: azure
+    ansible_user: ansible
+  with_items: "{{ azure_ip.ansible_facts.azure_publicipaddresses }}"
