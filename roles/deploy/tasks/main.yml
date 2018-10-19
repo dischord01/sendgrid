@@ -89,7 +89,7 @@
      sku: '7.4'
      version: latest
   with_items:
-    - "cic3-demo"
+    - "{{ vmname }}"
   register: azure_vm
 
 - name: Get Public IP
