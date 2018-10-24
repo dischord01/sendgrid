@@ -1,6 +1,6 @@
 ---
 # tasks file for teardown
-- name: remove vm and all resources
+- name: Stop Azure VM
   azure_rm_virtualmachine:
     resource_group: "{{ vault_azure_resource_group }}"
     name: "{{ item }}"

@@ -1,5 +1,5 @@
 ---
-- name: Deploy Azure Resources 
+- name: Stop Azure VMs
   hosts: localhost
   connection: local
   gather_facts: false
