@@ -31,6 +31,5 @@
           # - "{{ user_email }}"
         subject: "CloudForms Azure VM Monitoring"
         body: "Name	cic3-demo IP Addresses	10.0.0.6, 52.227.141.216
-               Management Engine GUID	130d0ee2-a67b-4c35-89fa-e9e14afa2f91
-               ID within Provider	f034aed9-13c2-4391-8d92-9a008b56b492\rg-cic3\microsoft.compute/virtualmachines\cic3-demo"
+               Management Engine GUID	130d0ee2-a67b-4c35-89fa-e9e14afa2f91"
       delegate_to: localhost
